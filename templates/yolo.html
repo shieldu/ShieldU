@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intrusion Detection Log</title>
+    <style>
+        body {
+            {% if intrusion %}
+                background-color: red;
+            {% else %}
+                background-color: white;
+            {% endif %}
+            transition: background-color 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-time Intrusion Detection Log</h1>
+    <ul id="log-list">
+        {% for log in logs %}
+            <li>{{ log }}</li>
+        {% endfor %}
+    </ul>
+    <script>
+    function updateLogs() {
+        fetch('/get_logs')
+            .then(response => response.json())
+            .then(data => {
+                const logList = document.getElementById('log-list');
+                logList.innerHTML = '';  // Clear the current log list
+                data.logs.forEach(log => {
+                    const li = document.createElement('li');
+                    li.textContent = log;
+                    logList.appendChild(li);
+                });
+            });
+    }
+
+    function checkIntrusionStatus() {
+        fetch('/intrusion_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.intrusion) {
+                    document.body.style.backgroundColor = "red";
+                } else {
+                    document.body.style.backgroundColor = "white";
+                }
+            });
+    }
+
+    // Poll the server every second to check intrusion status and update logs
+    setInterval(() => {
+        checkIntrusionStatus();
+        updateLogs();
+    }, 1000);
+    </script>
+</body>
+</html>
